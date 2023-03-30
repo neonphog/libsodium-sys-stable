@@ -1,8 +1,8 @@
-name: Build
+name: Test
 on: push
 jobs:
   test:
-    name: Build
+    name: Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -32,7 +32,8 @@ jobs:
           target: ${{ matrix.target }}
           toolchain: ${{ matrix.toolchain }}
 
-      - name: Cargo Build
+      - name: Cargo Test
         uses: actions-rs/cargo@v1
         with:
-          command: build
+          command: test
+          args: --target ${{ matrix.target }}
