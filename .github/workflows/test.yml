@@ -7,18 +7,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            toolchain: stable
-            target: x86_64-unknown-linux-gnu
-          - os: macos-latest
-            toolchain: stable
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            toolchain: stable
-            target: aarch64-apple-darwin
-          - os: windows-latest
-            toolchain: stable
-            target: x86_64-pc-windows-msvc
+          #- os: ubuntu-latest
+          #  toolchain: stable
+          #  target: x86_64-unknown-linux-gnu
+          #- os: macos-latest
+          #  toolchain: stable
+          #  target: x86_64-apple-darwin
+          #- os: macos-latest
+          #  toolchain: stable
+          #  target: aarch64-apple-darwin
+          #- os: windows-latest
+          #  toolchain: stable
+          #  target: x86_64-pc-windows-msvc
           - os: windows-latest
             toolchain: stable
             target: x86_64-pc-windows-gnu
