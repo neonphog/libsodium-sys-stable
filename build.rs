@@ -527,7 +527,7 @@ fn build_libsodium() {
 
     println!("cargo:warning=lib_dir: {lib_dir:?}");
 
-    if target.contains("msvc") {
+    if target.contains("windows") {
         println!("cargo:warning=rustc-link-lib=static=libsodium");
         println!("cargo:rustc-link-lib=static=libsodium");
     } else {
