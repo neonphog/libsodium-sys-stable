@@ -21,6 +21,12 @@ use std::{
 };
 
 fn main() {
+    for (key, value) in env::vars() {
+        if key.starts_with("CARGO_CFG_") {
+            println!("cargo:warning={key}: {value:?}");
+        }
+    }
+
     println!("cargo:rerun-if-env-changed=SODIUM_LIB_DIR");
     println!("cargo:rerun-if-env-changed=SODIUM_SHARED");
     println!("cargo:rerun-if-env-changed=SODIUM_USE_PKG_CONFIG");
@@ -389,29 +395,29 @@ fn is_release_profile() -> bool {
 #[cfg(all(target_env = "msvc", target_pointer_width = "32"))]
 fn get_lib_dir(install_dir: &Path) -> PathBuf {
     if is_release_profile() {
-        install_dir.join("libsodium/Win32/Release/v143/static/")
+        install_dir.join("libsodium\\Win32\\Release\\v143\\static\\")
     } else {
-        install_dir.join("libsodium/Win32/Debug/v143/static/")
+        install_dir.join("libsodium\\Win32\\Debug\\v143\\static\\")
     }
 }
 
 #[cfg(all(target_env = "msvc", target_pointer_width = "64"))]
 fn get_lib_dir(install_dir: &Path) -> PathBuf {
     if is_release_profile() {
-        install_dir.join("libsodium/x64/Release/v143/static/")
+        install_dir.join("libsodium\\x64\\Release\\v143\\static\\")
     } else {
-        install_dir.join("libsodium/x64/Debug/v143/static/")
+        install_dir.join("libsodium\\x64\\Debug\\v143\\static\\")
     }
 }
 
 #[cfg(all(windows, not(target_env = "msvc"), target_pointer_width = "32"))]
 fn get_lib_dir(install_dir: &Path) -> PathBuf {
-    install_dir.join("libsodium-win32/lib/")
+    install_dir.join("libsodium-win32\\lib\\")
 }
 
 #[cfg(all(windows, not(target_env = "msvc"), target_pointer_width = "64"))]
 fn get_lib_dir(install_dir: &Path) -> PathBuf {
-    install_dir.join("libsodium-win64/lib/")
+    install_dir.join("libsodium-win64\\lib\\")
 }
 
 fn get_install_dir() -> PathBuf {
