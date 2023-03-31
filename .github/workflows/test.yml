@@ -7,25 +7,23 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            toolchain: stable
-            target: x86_64-unknown-linux-gnu
-          - os: macos-latest
-            toolchain: stable
-            target: x86_64-apple-darwin
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
           # not yet supported by github actions
-          #- os: macos-latest
-          #  toolchain: stable
-          #  target: aarch64-apple-darwin
-          - os: windows-latest
-            toolchain: stable
-            target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            toolchain: stable
-            target: x86_64-pc-windows-gnu
+          #- target: aarch64-apple-darwin
+          #  os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+          - target: x86_64-pc-windows-gnu
+            os: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Cargo Version
+        run: cargo version
 
       - name: Cargo Test
         run: cargo test --target ${{ matrix.target }}
