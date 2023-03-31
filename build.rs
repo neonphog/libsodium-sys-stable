@@ -374,10 +374,12 @@ fn make_libsodium(target: &str, source_dir: &Path, install_dir: &Path) -> PathBu
     install_dir.join("lib")
 }
 
+/*
 #[cfg(any(windows, target_env = "msvc"))]
 fn get_crate_dir() -> PathBuf {
     env::var("CARGO_MANIFEST_DIR").unwrap().into()
 }
+*/
 
 #[cfg(target_env = "msvc")]
 fn is_release_profile() -> bool {
@@ -525,9 +527,13 @@ fn build_libsodium() {
 
     let lib_dir = make_libsodium(&target, &source_dir, &install_dir);
 
+    for ent in std::fs::read_dir(&lib_dir).unwrap() {
+        println!("cargo:warning={ent:?}");
+    }
+
     println!("cargo:warning=lib_dir: {lib_dir:?}");
 
-    if target.contains("windows") {
+    if target.contains("msvc") {
         println!("cargo:warning=rustc-link-lib=static=libsodium");
         println!("cargo:rustc-link-lib=static=libsodium");
     } else {
