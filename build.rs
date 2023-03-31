@@ -21,14 +21,12 @@ use std::{
 };
 
 /// Cargo compiles build.rs with the HOST cfg, instead of the TARGET cfg.
-/// So we cannot use, e.g., the standard `#[cfg(target_env = "msvc")]`,
-/// because if we specify `--target x86_64-pc-windows-gnu`, msvc will still
-/// be set when this build.rs is compiled.
-/// Instead, we need to query CARGO_CFG_TARGET_* at runtime. Since runtime
-/// env queries are relatively expensive, do it once and memoize the answers.
+/// So we cannot use build-time `#[cfg(..)]`, and instead must query
+/// the runtime environment variables set by cargo.
 struct Target {
     pub target: String,
     pub is_msvc: bool,
+
     #[cfg(windows)]
     pub is_release: bool,
     #[cfg(windows)]
@@ -48,19 +46,14 @@ impl Default for Target {
             target = format!("riscv{bitness}-{rest}");
         }
 
-        let is_msvc = std::env::var("CARGO_CFG_TARGET_ENV").unwrap() == "msvc";
-
-        #[cfg(windows)]
-        let is_release = env::var("PROFILE").unwrap() == "release";
-        #[cfg(windows)]
-        let is_64 = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").unwrap() == "64";
         Self {
             target,
-            is_msvc,
+            is_msvc: std::env::var("CARGO_CFG_TARGET_ENV").unwrap() == "msvc",
+
             #[cfg(windows)]
-            is_release,
+            is_release: env::var("PROFILE").unwrap() == "release",
             #[cfg(windows)]
-            is_64,
+            is_64: std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").unwrap() == "64",
         }
     }
 }
@@ -127,11 +120,7 @@ fn find_libsodium_env(tgt: &Target) {
     } else {
         "static"
     };
-    let name = if tgt.is_msvc {
-        "libsodium"
-    } else {
-        "sodium"
-    };
+    let name = if tgt.is_msvc { "libsodium" } else { "sodium" };
     println!("cargo:rustc-link-lib={mode}={name}");
     println!("cargo:warning=Using unknown libsodium version.");
 }
@@ -139,7 +128,6 @@ fn find_libsodium_env(tgt: &Target) {
 /* Must be called when no SODIUM_USE_PKG_CONFIG env var is set
 This function will set `cargo` flags.
 */
-#[allow(unused_variables)]
 fn find_libsodium_pkg(tgt: &Target) {
     #[cfg(windows)]
     {
@@ -161,6 +149,8 @@ fn find_libsodium_pkg(tgt: &Target) {
             return;
         }
     }
+
+    let _tgt = tgt;
 
     match pkg_config::Config::new().probe("libsodium") {
         Ok(lib) => {
@@ -418,18 +408,12 @@ fn make_libsodium(tgt: &Target, source_dir: &Path, install_dir: &Path) -> PathBu
 #[cfg(windows)]
 fn get_lib_dir(tgt: &Target, install_dir: &Path) -> PathBuf {
     match (tgt.is_msvc, tgt.is_64, tgt.is_release) {
-        (true, true, true) =>
-            install_dir.join("libsodium\\x64\\Release\\v143\\static\\"),
-        (true, true, false) =>
-            install_dir.join("libsodium\\x64\\Debug\\v143\\static\\"),
-        (true, false, true) =>
-            install_dir.join("libsodium\\Win32\\Release\\v143\\static\\"),
-        (true, false, false) =>
-            install_dir.join("libsodium\\Win32\\Debug\\v143\\static\\"),
-        (false, true, _) =>
-            install_dir.join("libsodium-win64\\lib\\"),
-        (false, false, _) =>
-            install_dir.join("libsodium-win32\\lib\\"),
+        (true, true, true) => install_dir.join("libsodium\\x64\\Release\\v143\\static\\"),
+        (true, true, false) => install_dir.join("libsodium\\x64\\Debug\\v143\\static\\"),
+        (true, false, true) => install_dir.join("libsodium\\Win32\\Release\\v143\\static\\"),
+        (true, false, false) => install_dir.join("libsodium\\Win32\\Debug\\v143\\static\\"),
+        (false, true, _) => install_dir.join("libsodium-win64\\lib\\"),
+        (false, false, _) => install_dir.join("libsodium-win32\\lib\\"),
     }
 }
 
