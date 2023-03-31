@@ -199,7 +199,7 @@ fn make_libsodium(tgt: &Target, _: &Path, install_dir: &Path) -> PathBuf {
         let mut archive = ZipArchive::new(std::io::Cursor::new(archive_bin)).unwrap();
         archive.extract(&install_dir).unwrap();
 
-        get_lib_dir(install_dir)
+        get_lib_dir(tgt, install_dir)
     } else {
         // We don't build anything on windows, we simply link to precompiled libs.
         use libflate::gzip::Decoder;
@@ -220,7 +220,7 @@ fn make_libsodium(tgt: &Target, _: &Path, install_dir: &Path) -> PathBuf {
 
         println!("cargo:warning=UNPACK LIBSODIUM: {install_dir:?}");
 
-        get_lib_dir(install_dir)
+        get_lib_dir(tgt, install_dir)
     }
 }
 
