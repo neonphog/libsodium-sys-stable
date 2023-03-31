@@ -37,7 +37,6 @@ struct Target {
 
 impl Default for Target {
     fn default() -> Self {
-
         // Determine build target triple
         let mut target = env::var("TARGET").unwrap();
         // Hack for RISC-V; Rust apparently uses a different convention for RISC-V triples
@@ -98,17 +97,14 @@ fn main() {
     }
 
     if lib_dir_isset {
-        println!("cargo:warning=FINDING LIBSODIUM (libdir)");
         find_libsodium_env(&tgt);
     } else if use_pkg_isset {
-        println!("cargo:warning=FINDING LIBSODIUM (pkg-config)");
         if shared_isset {
             println!("cargo:warning=SODIUM_SHARED has no effect with SODIUM_USE_PKG_CONFIG");
         }
 
         find_libsodium_pkg(&tgt);
     } else {
-        println!("cargo:warning=BUILDING LIBSODIUM");
         if shared_isset {
             println!(
                 "cargo:warning=SODIUM_SHARED has no effect for building libsodium from source"
@@ -217,8 +213,6 @@ fn make_libsodium(tgt: &Target, _: &Path, install_dir: &Path) -> PathBuf {
         let gz_decoder = Decoder::new(std::io::Cursor::new(archive_bin)).unwrap();
         let mut archive = Archive::new(gz_decoder);
         archive.unpack(&install_dir).unwrap();
-
-        println!("cargo:warning=UNPACK LIBSODIUM: {install_dir:?}");
 
         get_lib_dir(tgt, install_dir)
     }
@@ -455,7 +449,6 @@ fn retrieve_and_verify_archive(filename: &str, signature_filename: &str) -> Vec<
 
     #[cfg(any(windows, feature = "fetch-latest"))]
     {
-        println!("cargo:warning=DOWNLOAD LIBSODIUM");
         let baseurl = "https://download.libsodium.org/libsodium/releases";
         let response = ureq::get(&format!("{}/{}", baseurl, filename)).call();
         response
@@ -541,24 +534,12 @@ fn build_libsodium(tgt: &Target) {
 
     let lib_dir = make_libsodium(tgt, &source_dir, &install_dir);
 
-    for ent in std::fs::read_dir(&lib_dir).unwrap() {
-        println!("cargo:warning={ent:?}");
-    }
-
-    println!("cargo:warning=lib_dir: {lib_dir:?}");
-
     if tgt.is_msvc {
-        println!("cargo:warning=rustc-link-lib=static=libsodium");
         println!("cargo:rustc-link-lib=static=libsodium");
     } else {
-        println!("cargo:warning=rustc-link-lib=static=sodium");
         println!("cargo:rustc-link-lib=static=sodium");
     }
 
-    println!(
-        "cargo:warning=rustc-link-search=native={}",
-        lib_dir.to_str().unwrap()
-    );
     println!(
         "cargo:rustc-link-search=native={}",
         lib_dir.to_str().unwrap()
@@ -566,8 +547,6 @@ fn build_libsodium(tgt: &Target) {
 
     let include_dir = source_dir.join("src/libsodium/include");
 
-    println!("cargo:warning=include={}", include_dir.to_str().unwrap());
     println!("cargo:include={}", include_dir.to_str().unwrap());
-    println!("cargo:warning=lib={}", lib_dir.to_str().unwrap());
     println!("cargo:lib={}", lib_dir.to_str().unwrap());
 }
